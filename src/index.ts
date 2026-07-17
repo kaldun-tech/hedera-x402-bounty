@@ -2,8 +2,9 @@ import { serve } from "@hono/node-server";
 import { app } from "./server/app.js";
 import { config } from "./config.js";
 
-console.log(`Starting HCS Archive server on port ${config.port}...`);
+console.log(`Starting Hedera Metrics API on port ${config.port}...`);
 console.log(`Network: ${config.hederaNetwork}`);
+console.log(`Mirror Node: ${config.mirrorNodeUrl}`);
 console.log(`Pay to: ${config.payToAccount}`);
 
 serve({

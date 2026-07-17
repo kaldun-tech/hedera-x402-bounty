@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Hedera x402 bounty project implementing an HCS (Hedera Consensus Service) message archive with x402 micropayments. Users pay via x402 protocol to access historical HCS messages.
+This is a Hedera x402 bounty project implementing a **pay-per-query analytics API** for Hedera mirror node data. Users pay via x402 protocol to access computed metrics derived from Hedera network activity.
 
 ## Commands
 
@@ -22,9 +22,10 @@ npm run typecheck    # Type check without emitting
 ## Key Technologies
 
 - **x402 Protocol**: HTTP 402-based payment standard (`@x402/core`, `@x402/hedera`)
-- **Hedera**: HBAR payments via testnet, HCS message indexing
+- **Hedera**: HBAR payments via testnet
+- **Mirror Node**: REST API for historical network data (mainnet/testnet)
 - **Facilitator**: blocky402 (`https://api.testnet.blocky402.com`) or self-hosted
-- **Stack**: TypeScript, Hono (API server), PostgreSQL (message storage), postgres.js
+- **Stack**: TypeScript, Hono (API server), Vitest (testing)
 
 ## x402 Integration Pattern
 
@@ -46,22 +47,33 @@ const client = new x402Client().register("hedera:*", new ExactHederaScheme(signe
 const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 ```
 
-## Architecture (Planned)
+## Architecture
 
 ```
-HCS Indexer (mirror node subscription)
+Hedera Mirror Node (REST API)
     │
     ▼
-PostgreSQL (topic_id, sequence_number, timestamp, message, payer)
+Mirror Node Client (src/mirror/client.ts)
     │
     ▼
-Hono API Server
-  ├── GET /topics                  [free]
-  ├── GET /topics/:id/recent       [free - last 24h]
-  ├── GET /topics/:id/messages     [paid - x402]
-  ├── GET /topics/:id/search       [paid - x402]
-  └── GET /topics/:id/export       [paid - higher tier]
+Metrics Providers (src/metrics/*.ts)
+    │
+    ▼
+Hono API Server (src/server/app.ts)
+  ├── GET /health                              [free]
+  ├── GET /catalog                             [free - list products]
+  ├── GET /metrics/account/:id/activity        [paid - 0.02 HBAR]
+  ├── GET /metrics/token/:id/distribution      [paid - 0.05 HBAR]
+  └── GET /metrics/account/:id/portfolio       [paid - 0.03 HBAR]
 ```
+
+## Data Products
+
+| Product | Endpoint | Price | Description |
+|---------|----------|-------|-------------|
+| Account Activity | `/metrics/account/:id/activity` | 0.02 HBAR | Txn count, volume, counterparties over N days |
+| Token Distribution | `/metrics/token/:id/distribution` | 0.05 HBAR | Holder concentration metrics (Gini coefficient) |
+| Portfolio Snapshot | `/metrics/account/:id/portfolio` | 0.03 HBAR | All balances, tokens, NFTs with values |
 
 ## Environment Variables
 
@@ -73,13 +85,26 @@ PAY_TO_ACCOUNT=0.0.xxxx           # Receiver account
 # Facilitator
 FACILITATOR_URL=https://api.testnet.blocky402.com
 
-# Database
-DATABASE_URL=postgresql://...
+# Mirror Node (optional - defaults to public endpoints)
+MIRROR_NODE_URL=https://testnet.mirrornode.hedera.com
 
 # Client (for testing)
 HEDERA_CLIENT_ID=0.0.yyyy
 HEDERA_CLIENT_KEY=ecdsa_private_key
 ```
+
+## Mirror Node API Reference
+
+Base URLs:
+- Testnet: `https://testnet.mirrornode.hedera.com`
+- Mainnet: `https://mainnet.mirrornode.hedera.com`
+
+Key endpoints:
+- `GET /api/v1/accounts/{id}` - Account info and balances
+- `GET /api/v1/accounts/{id}/tokens` - Token balances
+- `GET /api/v1/transactions?account.id={id}` - Transaction history
+- `GET /api/v1/tokens/{id}` - Token info
+- `GET /api/v1/tokens/{id}/balances` - All holders of a token
 
 ## Reference Implementations
 

@@ -1,7 +1,7 @@
 {
   "name": "hedera-x402-bounty",
   "version": "0.1.0",
-  "description": "HCS Message Archive with x402 micropayments",
+  "description": "Pay-per-query Hedera Mirror Node metrics API with x402 micropayments",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -18,8 +18,7 @@
     "@x402/hedera": "^2.16.0",
     "@x402/hono": "^2.16.0",
     "dotenv": "^16.4.7",
-    "hono": "^4.7.4",
-    "postgres": "^3.4.5"
+    "hono": "^4.7.4"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
