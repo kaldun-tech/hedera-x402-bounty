@@ -106,6 +106,13 @@ Key endpoints:
 - `GET /api/v1/tokens/{id}` - Token info
 - `GET /api/v1/tokens/{id}/balances` - All holders of a token
 
+## Implementation Status
+
+See `PLAN.md` for full implementation checklist and progress tracking.
+
+**Completed:** Items 1-3 (data products) + x402 middleware + Item 8 (test client)
+**Next:** Item 9 (End-to-End Testing) - run `npm run test:client` with real credentials
+
 ## Reference Implementations
 
 - matevszm/x402-hedera-example: Pay-per-call API pattern

@@ -8,7 +8,12 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(xargs:*)",
       "Bash(tree:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(npx tsc:*)",
+      "Bash(npx tsx:*)",
+      "Bash(git -C /home/kaldun/projects/hedera-x402-bounty status)",
+      "Bash(git -C /home/kaldun/projects/hedera-x402-bounty diff PLAN.md)",
+      "Bash(git -C /home/kaldun/projects/hedera-x402-bounty status PLAN.md)"
     ]
   }
 }
