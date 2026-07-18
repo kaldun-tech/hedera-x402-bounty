@@ -112,10 +112,10 @@ export class MirrorClient {
     params.set("limit", "100");
 
     if (options.fromTimestamp) {
-      params.set("timestamp", `gte:${options.fromTimestamp}`);
+      params.append("timestamp", `gte:${options.fromTimestamp}`);
     }
     if (options.toTimestamp) {
-      params.set("timestamp", `lt:${options.toTimestamp}`);
+      params.append("timestamp", `lt:${options.toTimestamp}`);
     }
     if (options.transactionType) {
       params.set("transactiontype", options.transactionType);

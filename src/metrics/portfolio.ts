@@ -66,7 +66,12 @@ export async function computePortfolioMetric(
   for (let i = 0; i < tokenIds.length; i += BATCH_SIZE) {
     const batch = tokenIds.slice(i, i + BATCH_SIZE);
     const results = await Promise.all(
-      batch.map((id) => client.getToken(id).catch(() => null))
+      batch.map((id) =>
+        client.getToken(id).catch((err) => {
+          console.warn(`Failed to fetch token info for ${id}:`, err.message);
+          return null;
+        })
+      )
     );
     for (let j = 0; j < batch.length; j++) {
       const info = results[j];

@@ -14,6 +14,12 @@ import { createPaymentMiddleware } from "./x402.js";
 
 const app = new Hono();
 
+// Global error handler
+app.onError((err, c) => {
+  console.error("Unhandled error:", err.message);
+  return c.json({ error: "Internal server error" }, 500);
+});
+
 // Initialize mirror client
 const mirrorClient = new MirrorClient({
   baseUrl: config.mirrorNodeUrl,
@@ -95,7 +101,7 @@ app.get("/metrics/account/:id/activity", async (c) => {
   const daysParam = c.req.query("days");
   const days = daysParam ? parseInt(daysParam, 10) : undefined;
 
-  if (daysParam && (isNaN(days!) || days! < 1 || days! > 90)) {
+  if (days !== undefined && (isNaN(days) || days < 1 || days > 90)) {
     return c.json({ error: "days must be between 1 and 90" }, 400);
   }
 

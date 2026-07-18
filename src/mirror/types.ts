@@ -35,13 +35,13 @@ export interface AccountResponse {
 
 // Transaction types
 export interface Transfer {
-  account: string;
+  account: string | null;
   amount: number;
   is_approval: boolean;
 }
 
 export interface TokenTransfer {
-  account: string;
+  account: string | null;
   amount: number;
   token_id: string;
   is_approval: boolean;
