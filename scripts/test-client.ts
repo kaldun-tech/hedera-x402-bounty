@@ -127,11 +127,11 @@ async function main() {
     process.exit(1);
   }
 
-  // Test endpoints
+  // Test endpoints - using known testnet accounts/tokens
   const endpoints = [
-    { path: "/metrics/account/0.0.98/activity?days=7", name: "Account Activity" },
-    { path: "/metrics/token/0.0.456858/distribution", name: "Token Distribution" },
-    { path: "/metrics/account/0.0.98/portfolio", name: "Portfolio Snapshot" },
+    { path: "/metrics/account/0.0.1234/activity?days=7", name: "Account Activity" },
+    { path: "/metrics/token/0.0.9631599/distribution", name: "Token Distribution" },
+    { path: "/metrics/account/0.0.1234/portfolio", name: "Portfolio Snapshot" },
   ];
 
   const results: Array<{
@@ -170,11 +170,6 @@ async function main() {
 
       // Step 2: Parse payment requirements
       log("Step 2:", "Parsing payment requirements...");
-      const paymentRequiredHeader = initialResponse.headers.get("x-payment");
-      if (!paymentRequiredHeader) {
-        throw new Error("Missing x-payment header in 402 response");
-      }
-
       const paymentRequired = httpClient.getPaymentRequiredResponse(
         (headerName) => initialResponse.headers.get(headerName)
       );
@@ -185,7 +180,13 @@ async function main() {
       }
 
       log("Pay To:", acceptedPayment.payTo || "unknown", colors.dim);
-      log("Amount:", `${acceptedPayment.price?.amount || "?"} tinybars`, colors.dim);
+      log("Amount:", `${acceptedPayment.amount || acceptedPayment.price?.amount || "?"} tinybars`, colors.dim);
+
+      // Debug: show full payment requirements
+      if (process.env.DEBUG) {
+        console.log(`${colors.dim}Payment requirements:${colors.reset}`);
+        console.log(JSON.stringify(paymentRequired, null, 2));
+      }
 
       // Step 3: Create payment signature
       log("Step 3:", "Signing payment...");
@@ -196,6 +197,12 @@ async function main() {
 
       // Step 4: Retry with payment
       log("Step 4:", "Sending paid request...");
+
+      if (process.env.DEBUG) {
+        console.log(`${colors.dim}Payment headers:${colors.reset}`);
+        console.log(JSON.stringify(paymentHeaders, null, 2));
+      }
+
       const paidResponse = await fetch(url, {
         headers: paymentHeaders,
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
@@ -203,6 +210,17 @@ async function main() {
 
       if (!paidResponse.ok) {
         const errorBody = await paidResponse.text();
+        // Also check response headers for error details
+        const paymentError = paidResponse.headers.get("payment-required");
+        if (process.env.DEBUG && paymentError) {
+          console.log(`${colors.dim}Payment error response:${colors.reset}`);
+          try {
+            const decoded = JSON.parse(Buffer.from(paymentError, "base64").toString());
+            console.log(JSON.stringify(decoded, null, 2));
+          } catch {
+            console.log(paymentError);
+          }
+        }
         throw new Error(`Payment failed: ${paidResponse.status} - ${errorBody}`);
       }
 

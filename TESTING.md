@@ -26,12 +26,12 @@ PAY_TO_ACCOUNT=0.0.XXXXXX        # Your account that receives payments
 FACILITATOR_URL=https://api.testnet.blocky402.com
 PORT=4021
 
-# Client config (payer - can be same account for testing)
-HEDERA_CLIENT_ID=0.0.XXXXXX      # Account that pays for API calls
+# Client config (payer)
+HEDERA_CLIENT_ID=0.0.YYYYYY      # Account that pays for API calls
 HEDERA_CLIENT_KEY=302e02...      # ECDSA private key (hex)
 ```
 
-> **Tip:** For testing, `PAY_TO_ACCOUNT` and `HEDERA_CLIENT_ID` can be the same account. You'll pay yourself, which still generates valid on-chain transactions.
+> **Important:** `PAY_TO_ACCOUNT` and `HEDERA_CLIENT_ID` **must be different accounts**. The x402 protocol cannot handle self-payments. Create two separate testnet accounts at https://portal.hedera.com/.
 
 ### 3. Verify Dependencies
 

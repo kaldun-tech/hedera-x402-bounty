@@ -13,7 +13,8 @@
       "Bash(npx tsx:*)",
       "Bash(git -C /home/kaldun/projects/hedera-x402-bounty status)",
       "Bash(git -C /home/kaldun/projects/hedera-x402-bounty diff PLAN.md)",
-      "Bash(git -C /home/kaldun/projects/hedera-x402-bounty status PLAN.md)"
+      "Bash(git -C /home/kaldun/projects/hedera-x402-bounty status PLAN.md)",
+      "Bash(curl:*)"
     ]
   }
 }

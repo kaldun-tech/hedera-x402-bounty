@@ -5,14 +5,11 @@
  * Uses the blocky402 facilitator on testnet for payment processing.
  */
 
-import {
-  paymentMiddlewareFromConfig,
-  x402ResourceServer,
-  type RoutesConfig,
-} from "@x402/hono";
-import { HTTPFacilitatorClient } from "@x402/core/server";
-import { ExactHederaScheme, HEDERA_TESTNET_CAIP2 } from "@x402/hedera";
+import { paymentMiddleware } from "@x402/hono";
+import { x402ResourceServer, HTTPFacilitatorClient } from "@x402/core/server";
+import type { RoutesConfig } from "@x402/core/server";
 import type { Network } from "@x402/core/types";
+import { ExactHederaScheme } from "@x402/hedera/exact/server";
 import { config } from "../config.js";
 
 // Asset ID for native HBAR
@@ -26,50 +23,55 @@ const PRICES = {
 } as const;
 
 /**
+ * Helper to get price for a given path
+ */
+function getPriceForPath(path: string): { amount: string; asset: string } {
+  if (path.includes("/activity")) {
+    return { amount: PRICES.accountActivity, asset: HBAR_ASSET };
+  }
+  if (path.includes("/distribution")) {
+    return { amount: PRICES.tokenDistribution, asset: HBAR_ASSET };
+  }
+  if (path.includes("/portfolio")) {
+    return { amount: PRICES.portfolioSnapshot, asset: HBAR_ASSET };
+  }
+  // Default price
+  return { amount: PRICES.accountActivity, asset: HBAR_ASSET };
+}
+
+/**
  * Route configurations for x402-protected endpoints
  */
 export const x402Routes: RoutesConfig = {
   "GET /metrics/account/:id/activity": {
+    description: "Account activity metrics including transaction count and volume",
     accepts: {
       scheme: "exact",
       network: config.hederaNetwork as Network,
       payTo: config.payToAccount,
-      price: {
-        amount: PRICES.accountActivity,
-        asset: HBAR_ASSET,
-      },
+      price: (ctx) => getPriceForPath(ctx.path),
       maxTimeoutSeconds: 60,
     },
-    description: "Account activity metrics including transaction count and volume",
-    resource: "account-activity",
   },
   "GET /metrics/token/:id/distribution": {
+    description: "Token holder distribution and concentration metrics",
     accepts: {
       scheme: "exact",
       network: config.hederaNetwork as Network,
       payTo: config.payToAccount,
-      price: {
-        amount: PRICES.tokenDistribution,
-        asset: HBAR_ASSET,
-      },
+      price: (ctx) => getPriceForPath(ctx.path),
       maxTimeoutSeconds: 60,
     },
-    description: "Token holder distribution and concentration metrics",
-    resource: "token-distribution",
   },
   "GET /metrics/account/:id/portfolio": {
+    description: "Complete portfolio snapshot with all token holdings",
     accepts: {
       scheme: "exact",
       network: config.hederaNetwork as Network,
       payTo: config.payToAccount,
-      price: {
-        amount: PRICES.portfolioSnapshot,
-        asset: HBAR_ASSET,
-      },
+      price: (ctx) => getPriceForPath(ctx.path),
       maxTimeoutSeconds: 60,
     },
-    description: "Complete portfolio snapshot with all token holdings",
-    resource: "portfolio-snapshot",
   },
 };
 
@@ -81,25 +83,11 @@ export function createPaymentMiddleware() {
     url: config.facilitatorUrl,
   });
 
-  // Determine network for scheme registration
-  const network =
-    config.hederaNetwork === "hedera:mainnet"
-      ? "hedera:mainnet"
-      : HEDERA_TESTNET_CAIP2;
-
-  return paymentMiddlewareFromConfig(
-    x402Routes,
-    facilitator,
-    [
-      {
-        network: network as Network,
-        server: new ExactHederaScheme(),
-      },
-    ],
-    {
-      // Paywall configuration for browser requests
-      title: "Hedera Metrics API",
-      description: "Pay-per-query access to Hedera network analytics",
-    }
+  // Create x402 server with Hedera scheme registered
+  const x402Server = new x402ResourceServer(facilitator).register(
+    "hedera:*",
+    new ExactHederaScheme()
   );
+
+  return paymentMiddleware(x402Routes, x402Server);
 }
