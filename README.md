@@ -63,7 +63,7 @@ The facilitator handles transaction submission and pays network fees, making mic
 
 ```bash
 # Clone and install
-git clone https://github.com/YOUR_USERNAME/hedera-x402-bounty.git
+git clone https://github.com/kaldun-tech/hedera-x402-bounty.git
 cd hedera-x402-bounty
 npm install
 
@@ -323,7 +323,7 @@ curl "https://testnet.mirrornode.hedera.com/api/v1/transactions/0.0.12345-123456
 
 ## Tech Stack
 
-- **Runtime:** Node.js 18+
+- **Runtime:** Node.js 20+
 - **Framework:** [Hono](https://hono.dev/) (lightweight, fast)
 - **Payments:** [@x402/hedera](https://www.x402.org/) (x402 protocol)
 - **Data Source:** Hedera Mirror Node REST API

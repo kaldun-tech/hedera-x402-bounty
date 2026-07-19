@@ -23,8 +23,16 @@ const hederaNetwork = optional("HEDERA_NETWORK", "hedera:testnet");
 const defaultMirrorUrl =
   networkMirrorUrls[hederaNetwork] ?? "https://testnet.mirrornode.hedera.com";
 
+function parsePort(value: string): number {
+  const port = parseInt(value, 10);
+  if (isNaN(port) || port < 1 || port > 65535) {
+    throw new Error(`Invalid PORT: ${value}. Must be between 1 and 65535.`);
+  }
+  return port;
+}
+
 export const config = {
-  port: parseInt(optional("PORT", "4021"), 10),
+  port: parsePort(optional("PORT", "4021")),
   hederaNetwork,
   payToAccount: required("PAY_TO_ACCOUNT"),
   facilitatorUrl: optional(

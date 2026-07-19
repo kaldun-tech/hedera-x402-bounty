@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function jsonBody(res: Response): Promise<any> {

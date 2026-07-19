@@ -50,7 +50,6 @@ export async function computePortfolioMetric(
   }
 
   const hbarBalanceTinybar = accountInfo.balance.balance;
-  const hbarBalance = hbarBalanceTinybar / TINYBARS_PER_HBAR;
 
   // Fetch all token balances for the account
   const tokenBalances = await client.getAccountTokens(params.accountId, {
@@ -90,6 +89,10 @@ export async function computePortfolioMetric(
     if (!info) continue;
 
     const decimals = parseInt(info.decimals, 10);
+    if (isNaN(decimals)) {
+      console.warn(`Invalid decimals for token ${tokenBalance.token_id}: ${info.decimals}`);
+      continue;
+    }
     const divisor = Math.pow(10, decimals);
 
     const holding: TokenHolding = {
@@ -115,7 +118,8 @@ export async function computePortfolioMetric(
 
   return {
     accountId: params.accountId,
-    hbarBalance: Math.round(hbarBalance * 100000000) / 100000000,
+    // Use integer division to avoid floating point precision issues
+    hbarBalance: hbarBalanceTinybar / TINYBARS_PER_HBAR,
     hbarBalanceTinybar,
     tokenCount: tokenBalances.length,
     fungibleTokens,

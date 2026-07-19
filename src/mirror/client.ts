@@ -70,6 +70,13 @@ export class MirrorClient {
       pageCount++;
     }
 
+    // Warn if data was truncated due to maxPages limit
+    if (path !== null) {
+      console.warn(
+        `Pagination truncated at ${maxPages} pages (${items.length} items). More data available.`
+      );
+    }
+
     return items;
   }
 

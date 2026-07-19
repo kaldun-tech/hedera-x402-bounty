@@ -9,7 +9,6 @@
  */
 
 import type { MirrorClient } from "../mirror/client.js";
-import type { TokenInfo } from "../mirror/types.js";
 
 export interface DistributionMetricParams {
   tokenId: string;
@@ -103,6 +102,9 @@ export async function computeDistributionMetric(
 
   const totalHeld = sortedBalances.reduce((sum, val) => sum + val, 0);
   const decimals = parseInt(tokenInfo.decimals, 10);
+  if (isNaN(decimals)) {
+    throw new Error(`Invalid decimals for token ${params.tokenId}: ${tokenInfo.decimals}`);
+  }
   const divisor = Math.pow(10, decimals);
 
   // Build top holders list (top 10)

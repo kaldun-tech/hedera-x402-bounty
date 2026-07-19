@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { computeActivityMetric } from "../activity.js";
 import type { MirrorClient } from "../../mirror/client.js";
 import type { Transaction } from "../../mirror/types.js";
